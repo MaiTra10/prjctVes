@@ -26,6 +26,6 @@ async def on_ready():
 @bot.tree.command(name = "say", description = "Tell Ves to say something.")
 @app_commands.describe(say_this = "What do you want me to say?")
 async def say(interaction: discord.Interaction, say_this: str):
-    await interaction.response.send_message(f"{interaction.user.mention} told me to say: '{say_this}'.")
+    await interaction.response.send_message(f"{interaction.user.mention} told me to say: '{say_this}'.") # Add 'ephemeral = True' to make it visible only to the user
 # Run bot using unique token
 bot.run(TOKEN)
