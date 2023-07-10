@@ -58,8 +58,37 @@ async def say(interaction: discord.Interaction, say_this: Optional[str] = None):
 
 @bot.tree.command(name = "wl_add", description = "Add an entry to your watchlist")
 @app_commands.describe(choice = "Choose either 'steam' or 'stock'", name = "Steam: Exact name of item and wear (if any) at end in brackets | Stock: '[ticker]:[exchange]'")
-async def wl_add(interaction: discord.Interaction, choice: str, name:str):
+@app_commands.choices(choice = [
+    app_commands.Choice(name = "steam ", value = "steam"),
+    app_commands.Choice(name = "stock ", value = "stock")
+])
+async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[str], name:str):
 
     await interaction.response.send_message(f"User ID: {interaction.user.id}\nChoice: {choice}\nName: {name}")
+
+@bot.tree.command(name = "wl_remove", description = "Remove an entry from your watchlist")
+@app_commands.describe(choice = "Choose either 'steam' or 'stock'", index = "Where in the list is the item you want to remove located? (1-10)")
+@app_commands.choices(choice = [
+    app_commands.Choice(name = "steam ", value = "steam"),
+    app_commands.Choice(name = "stock ", value = "stock")
+])
+async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choice[str], index: app_commands.Range[int, 1, 10]):
+
+    api_resp = api("DELETE", "remove", {"for": choice, "user": interaction.user.id, "index": index})
+
+@bot.tree.command(name = "wl", description = "Display your watchlist")
+@app_commands.describe(choice = "Choose either 'steam', 'stock' or 'both'", index = "Which watchlist entry do you want to take a closer look at? (1-10)")
+@app_commands.choices(choice = [
+    app_commands.Choice(name = "steam ", value = "steam"),
+    app_commands.Choice(name = "stock ", value = "stock"),
+    app_commands.Choice(name = "both", value = "both")
+])
+async def wl(interaction: discord.Interaction, choice: app_commands.Choice[str], index: Optional[app_commands.Range[int, 1,10]] = None):
+
+    if index == None:
+
+        retrieve = "all"
+
+    api_resp = api("GET", "get", {"for": choice, "user": interaction.user.id, "retrieve": retrieve, "index": index})
 
 bot.run(TOKEN)
