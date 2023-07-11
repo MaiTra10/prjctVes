@@ -64,7 +64,52 @@ async def say(interaction: discord.Interaction, say_this: Optional[str] = None):
 ])
 async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[str], name:str):
 
-    await interaction.response.send_message(f"User ID: {interaction.user.id}\nChoice: {choice}\nName: {name}")
+    await interaction.response.defer(ephemeral = True)
+
+    chosen = choice.value
+
+    if chosen == "steam":
+
+        params = {"requestType": "validate", "itemName": name}
+
+    else:
+
+        try:
+
+            params = {"requestType": "validate", "ticker": name.split(":")[0], "exchange": name.split(":")[1]}
+
+        except:
+
+            await interaction.followup.send(f"'{name}' is not a valid entry for a {chosen} watchlist!", ephemeral = True)
+            return
+
+    validate_resp  = api("GET", chosen, params)
+
+    if validate_resp["StatusCode"] == 400:
+
+        await interaction.followup.send(f"'{name}' is not a valid entry for a {chosen} watchlist!", ephemeral = True)
+        return
+
+    # 'name' is validated
+
+    add_resp = api("POST", "add", {"for": chosen, "user": interaction.user.id, "itemToAdd": name})
+
+    add_status = add_resp["StatusCode"]
+
+    if add_status == 409:
+
+        await interaction.followup.send(f"'{name}' is already in your {chosen} watchlist!", ephemeral = True)
+        return
+    
+    elif add_status == 403:
+
+        await interaction.followup.send(f"You have reached the maximum number of entries for your {chosen} watchlist!", ephemeral = True)
+        return
+    
+    else:
+
+        await interaction.followup.send(f"'{name}' was successfully added to your {chosen} watchlist!", ephemeral = True)
+        return
 
 @bot.tree.command(name = "wl_remove", description = "Remove an entry from your watchlist")
 @app_commands.describe(choice = "Choose either 'steam' or 'stock'", index = "Where in the list is the item you want to remove located? (1-10)")
