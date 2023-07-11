@@ -3,6 +3,7 @@ import discord
 import os
 import requests
 import json
+import simplejson as json
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional
@@ -30,10 +31,30 @@ def api(http_method, method, params):
 
     return {
 
-        "StatusCode": resp.status_code,
+        "statusCode": resp.status_code,
         "body": resp.text
 
     }
+
+def validate_name(chosen, name):
+
+    if chosen == "steam":
+
+        params = {"requestType": "validate", "itemName": name}
+
+    else:
+
+        try:
+
+            params = {"requestType": "validate", "ticker": name.split(":")[0], "exchange": name.split(":")[1]}
+
+        except:
+
+            return 400
+
+    validate_resp  = api("GET", chosen, params)
+
+    return validate_resp["statusCode"]
 
 @bot.event
 async def on_ready():
@@ -68,24 +89,9 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     chosen = choice.value
 
-    if chosen == "steam":
+    valid = validate_name(chosen, name)
 
-        params = {"requestType": "validate", "itemName": name}
-
-    else:
-
-        try:
-
-            params = {"requestType": "validate", "ticker": name.split(":")[0], "exchange": name.split(":")[1]}
-
-        except:
-
-            await interaction.followup.send(f"'{name}' is not a valid entry for a {chosen} watchlist!", ephemeral = True)
-            return
-
-    validate_resp  = api("GET", chosen, params)
-
-    if validate_resp["StatusCode"] == 400:
+    if valid != 200:
 
         await interaction.followup.send(f"'{name}' is not a valid entry for a {chosen} watchlist!", ephemeral = True)
         return
@@ -94,7 +100,7 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     add_resp = api("POST", "add", {"for": chosen, "user": interaction.user.id, "itemToAdd": name})
 
-    add_status = add_resp["StatusCode"]
+    add_status = add_resp["statusCode"]
 
     if add_status == 409:
 
@@ -119,7 +125,28 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 ])
 async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choice[str], index: app_commands.Range[int, 1, 10]):
 
-    api_resp = api("DELETE", "remove", {"for": choice, "user": interaction.user.id, "index": index})
+    await interaction.response.defer(ephemeral = True)
+
+    chosen = choice.value
+
+    remove_resp = api("DELETE", "remove", {"for": chosen, "user": interaction.user.id, "index": index})
+
+    remove_status = remove_resp["statusCode"]
+
+    if remove_status == 403:
+
+        await interaction.followup.send(f"Your {chosen} watchlist is empty!", ephemeral = True)
+        return
+
+    elif remove_status == 400:
+
+        await interaction.followup.send(f"{remove_resp['body'].split(': ')[1]}!", ephemeral = True)
+        return
+    
+    else:
+
+        await interaction.followup.send(f"'{json.loads(remove_resp['body'])['item']}' was successfully removed from your {chosen} watchlist!", ephemeral = True)
+        return
 
 @bot.tree.command(name = "wl", description = "Display your watchlist")
 @app_commands.describe(choice = "Choose either 'steam', 'stock' or 'both'", index = "Which watchlist entry do you want to take a closer look at? (1-10)")
