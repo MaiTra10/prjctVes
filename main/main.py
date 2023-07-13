@@ -82,6 +82,54 @@ def get_item_list(items):
 
     return steam_list_string, stock_list_string
 
+def get_specific_item_embed(chosen, item_name):
+    
+    if chosen == "steam":
+
+        steam_resp = api("GET", "steam", {"requestType": "advanced", "itemName": item_name})
+
+        steam_body = json.loads(steam_resp["body"])
+
+        embed = discord.Embed(title = f"{item_name}", color = 0x223E5A)
+        embed.set_thumbnail(url = f"{steam_body['imgURL']}")
+        embed.add_field(name = "Lowest Price", value = f"{steam_body['lowest_price']}", inline = False)
+        embed.add_field(name = "Volume", value = f"**{steam_body['volume']}** sold in the last 24 hours", inline = True)
+        embed.add_field(name = "Median Sale Price", value = f"{steam_body['median_price']}", inline = True)
+
+        return embed
+    
+    else:
+
+        stock_resp = api("GET", "stock", {"requestType": "advanced", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
+
+        stock_body = json.loads(stock_resp["body"])
+
+        stock_parameters = list(stock_body.keys())[:-1]
+
+        if stock_body["% Change"] < 0.00:
+
+            emoji = ":small_red_triangle_down:"
+
+        elif stock_body["% Change"] > 0.00:
+
+            emoji = ":green_circle:"
+
+        else:
+
+            emoji = ":white_small_square:"
+
+        embed = discord.Embed(title = f"{item_name} {emoji} {stock_body['% Change']}", color = 0x427D57)
+
+        for parameter in stock_parameters:
+
+            embed.add_field(name = parameter, value = stock_body[parameter])
+
+        if len(stock_parameters) == 8:
+
+            embed.add_field(name = "", value = "")
+
+        return embed
+
 @bot.event
 async def on_ready():
 
@@ -212,6 +260,8 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
     get_status = get_resp["statusCode"]
 
+    # Error check
+
     if get_status == 403:
 
         if chosen == "both":
@@ -236,6 +286,17 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         return
 
+    # No error in request
+
+    if retrieve == "specific":
+
+        item = json.loads(get_resp["body"])
+        item_name = item['item']
+
+        embed = get_specific_item_embed(chosen, item_name)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+        return
 
     if chosen == "both":
 
@@ -243,7 +304,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         steam_list_string, stock_list_string = get_item_list(items)
 
-        embed = discord.Embed(title = "Watchlists", color = 0x278B3F)
+        embed = discord.Embed(title = "Watchlists", color = 0x7C437C)
 
         if steam_list_string != "":
 
@@ -265,7 +326,6 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
         embed.add_field(name = "Stock", value = f"{stock_prefix}{stock_list_string}", inline = True)
 
         await interaction.followup.send(embed = embed, ephemeral = True)
-
-    return
+        return
 
 bot.run(TOKEN)
