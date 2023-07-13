@@ -9,7 +9,6 @@ from discord.ext import commands
 from typing import Optional
 
 TOKEN = os.getenv("DISCORD_TOKEN_VES")
-API_KEY = os.getenv("API_KEY_TD")
 
 bot = commands.Bot(command_prefix = ".", intents = discord.Intents.default())
 
@@ -55,6 +54,33 @@ def validate_name(chosen, name):
     validate_resp  = api("GET", chosen, params)
 
     return validate_resp["statusCode"]
+
+def get_item_list(items):
+    
+    steam_items = []
+    stock_items = []
+
+    steam_index = 0
+    stock_index = 0
+
+    for item in items:
+
+        item_name = item["item"]
+
+        if str(item["ctx"]).startswith(".v-"):
+            
+            steam_index += 1
+            steam_items.append(f"{steam_index}. {item_name}")
+
+        elif str(item["ctx"]).startswith(".s-"): 
+
+            stock_index += 1
+            stock_items.append(f"{stock_index}. {item_name}")
+
+    steam_list_string = "\n> ".join(steam_items)
+    stock_list_string = "\n> ".join(stock_items)
+
+    return steam_list_string, stock_list_string
 
 @bot.event
 async def on_ready():
@@ -140,7 +166,7 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
 
     elif remove_status == 400:
 
-        await interaction.followup.send(f"{remove_resp['body'].split(': ')[1]}!", ephemeral = True)
+        await interaction.followup.send(f"{remove_resp['body'].split(': ')[1]}", ephemeral = True)
         return
     
     else:
@@ -152,15 +178,94 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
 @app_commands.describe(choice = "Choose either 'steam', 'stock' or 'both'", index = "Which watchlist entry do you want to take a closer look at? (1-10)")
 @app_commands.choices(choice = [
     app_commands.Choice(name = "steam ", value = "steam"),
-    app_commands.Choice(name = "stock ", value = "stock"),
-    app_commands.Choice(name = "both", value = "both")
+    app_commands.Choice(name = "stock ", value = "stock")
 ])
-async def wl(interaction: discord.Interaction, choice: app_commands.Choice[str], index: Optional[app_commands.Range[int, 1,10]] = None):
+async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Choice[str]] = "both", index: Optional[app_commands.Range[int, 1, 10]] = None):
+
+    await interaction.response.defer(ephemeral = True)
+
+    if choice != "both":
+
+        chosen = choice.value
+
+    else:
+
+        chosen = choice
+
+    if choice == "both" and index != None:
+
+        embed = discord.Embed(title = "Error", description = f"You cannot specify an index without specifying a watchlist type (steam/stock).", color = 0xff0000)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+
+        return
 
     if index == None:
 
         retrieve = "all"
 
-    api_resp = api("GET", "get", {"for": choice, "user": interaction.user.id, "retrieve": retrieve, "index": index})
+    else:
+
+        retrieve = "specific"
+
+    get_resp = api("GET", "get", {"for": chosen, "user": interaction.user.id, "retrieve": retrieve, "index": index})
+
+    get_status = get_resp["statusCode"]
+
+    if get_status == 403:
+
+        if chosen == "both":
+
+            message = "Both of your watchlists are empty!"
+
+        else:
+
+            message = f"Your {chosen} watchlist is empty!"
+
+        embed = discord.Embed(title = "Error", description = message, color = 0xff0000)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+
+        return
+
+    elif get_status == 400:
+
+        embed = discord.Embed(title = "Error", description = f"{get_resp['body'].split(': ')[1]}", color = 0xff0000)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+
+        return
+
+
+    if chosen == "both":
+
+        items = json.loads(get_resp["body"])
+
+        steam_list_string, stock_list_string = get_item_list(items)
+
+        embed = discord.Embed(title = "Watchlists", color = 0x278B3F)
+
+        if steam_list_string != "":
+
+            steam_prefix = "> "
+
+        else:
+
+            steam_prefix = ""
+
+        if stock_list_string != "":
+
+            stock_prefix = "> "
+
+        else:
+
+            stock_prefix = ""
+
+        embed.add_field(name = "Steam", value = f"{steam_prefix}{steam_list_string}", inline = True)
+        embed.add_field(name = "Stock", value = f"{stock_prefix}{stock_list_string}", inline = True)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+
+    return
 
 bot.run(TOKEN)
