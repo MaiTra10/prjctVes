@@ -205,7 +205,7 @@ async def say(interaction: discord.Interaction, say_this: Optional[str] = None):
     app_commands.Choice(name = "steam ", value = "steam"),
     app_commands.Choice(name = "stock ", value = "stock")
 ])
-async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[str], name:str):
+async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[str], name: str):
 
     await interaction.response.defer(ephemeral = True)
 
@@ -393,5 +393,31 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         await interaction.followup.send(embed = embed, ephemeral = True)
         return
+    
+@bot.tree.command(name = "search", description = "Search for a specific CS:GO item or stock.")
+@app_commands.describe(choice = "Choose either 'steam' or 'stock'", name = "Steam: Exact name of item and wear (if any) at end in brackets | Stock: '[ticker]:[exchange]'")
+@app_commands.choices(choice = [
+    app_commands.Choice(name = "steam ", value = "steam"),
+    app_commands.Choice(name = "stock ", value = "stock")
+])
+async def search(interaction: discord.Interaction, choice: app_commands.Choice[str], name: str):
+
+    await interaction.response.defer(ephemeral = True)
+
+    chosen = choice.value
+
+    valid = validate_name(chosen, name)
+
+    if valid != 200:
+
+        await interaction.followup.send(f"'{name}' is not a valid stock/CS:GO item.", ephemeral = True)
+        return
+
+    # 'name' is validated
+
+    embed = get_specific_item_embed(chosen, name)
+
+    await interaction.followup.send(embed = embed, ephemeral = True)
+    return
 
 bot.run(TOKEN)
