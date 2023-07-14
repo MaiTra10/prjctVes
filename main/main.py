@@ -100,6 +100,36 @@ def get_steam_embed(items):
 
     return embed
 
+def get_stock_embed(items):
+
+    embed = discord.Embed(title = "Stock Watchlist", color = 0x50C374)
+
+    for count, item in enumerate(items):
+        
+        count += 1
+
+        item_name = item['item']
+
+        stock_resp = api("GET", "stock", {"requestType": "basic", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
+
+        stock_body = json.loads(stock_resp["body"])
+
+        if stock_body["% Change"] < 0.00:
+
+            emoji = ":small_red_triangle_down:"
+
+        elif stock_body["% Change"] > 0.00:
+
+            emoji = "<:green_triangle_up:1129481299183284405>"
+
+        else:
+
+            emoji = ":white_small_square:"
+
+        embed.add_field(name = f"{count}. {item_name} {emoji} {abs(stock_body['% Change'])}%", value = f"{stock_body['Current Price']}", inline = False)
+
+    return embed
+
 def get_specific_item_embed(chosen, item_name):
     
     if chosen == "steam":
@@ -136,7 +166,7 @@ def get_specific_item_embed(chosen, item_name):
 
             emoji = ":white_small_square:"
 
-        embed = discord.Embed(title = f"{item_name} {emoji} {stock_body['% Change']}%", color = 0x50C374)
+        embed = discord.Embed(title = f"{item_name} {emoji} {abs(stock_body['% Change'])}%", color = 0x50C374)
 
         for parameter in stock_parameters:
 
@@ -351,6 +381,15 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
         items = json.loads(get_resp["body"])
 
         embed = get_steam_embed(items)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+        return
+
+    else:
+
+        items = json.loads(get_resp["body"])
+
+        embed = get_stock_embed(items)
 
         await interaction.followup.send(embed = embed, ephemeral = True)
         return
