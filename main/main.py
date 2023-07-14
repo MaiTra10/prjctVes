@@ -55,7 +55,7 @@ def validate_name(chosen, name):
 
     return validate_resp["statusCode"]
 
-def get_item_list(items):
+def get_both_item_list(items):
     
     steam_items = []
     stock_items = []
@@ -82,6 +82,24 @@ def get_item_list(items):
 
     return steam_list_string, stock_list_string
 
+def get_steam_embed(items):
+
+    embed = discord.Embed(title = "Steam Watchlist", color = 0x0175A7)
+
+    for count, item in enumerate(items):
+        
+        count += 1
+
+        item_name = item['item']
+
+        steam_resp = api("GET", "steam", {"requestType": "basic", "itemName": item_name})
+
+        steam_body = json.loads(steam_resp["body"])
+
+        embed.add_field(name = f"{count}. {item_name}", value = f"{steam_body['lowest_price']}", inline = False)
+
+    return embed
+
 def get_specific_item_embed(chosen, item_name):
     
     if chosen == "steam":
@@ -90,7 +108,7 @@ def get_specific_item_embed(chosen, item_name):
 
         steam_body = json.loads(steam_resp["body"])
 
-        embed = discord.Embed(title = f"{item_name}", color = 0x223E5A)
+        embed = discord.Embed(title = f"{item_name}", color = 0x0175A7)
         embed.set_thumbnail(url = f"{steam_body['imgURL']}")
         embed.add_field(name = "Lowest Price", value = f"{steam_body['lowest_price']}", inline = False)
         embed.add_field(name = "Volume", value = f"**{steam_body['volume']}** sold in the last 24 hours", inline = True)
@@ -112,13 +130,13 @@ def get_specific_item_embed(chosen, item_name):
 
         elif stock_body["% Change"] > 0.00:
 
-            emoji = ":green_circle:"
+            emoji = "<:green_triangle_up:1129481299183284405>"
 
         else:
 
             emoji = ":white_small_square:"
 
-        embed = discord.Embed(title = f"{item_name} {emoji} {stock_body['% Change']}", color = 0x427D57)
+        embed = discord.Embed(title = f"{item_name} {emoji} {stock_body['% Change']}%", color = 0x50C374)
 
         for parameter in stock_parameters:
 
@@ -302,7 +320,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         items = json.loads(get_resp["body"])
 
-        steam_list_string, stock_list_string = get_item_list(items)
+        steam_list_string, stock_list_string = get_both_item_list(items)
 
         embed = discord.Embed(title = "Watchlists", color = 0x7C437C)
 
@@ -324,6 +342,15 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         embed.add_field(name = "Steam", value = f"{steam_prefix}{steam_list_string}", inline = True)
         embed.add_field(name = "Stock", value = f"{stock_prefix}{stock_list_string}", inline = True)
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+        return
+    
+    elif chosen == "steam":
+
+        items = json.loads(get_resp["body"])
+
+        embed = get_steam_embed(items)
 
         await interaction.followup.send(embed = embed, ephemeral = True)
         return
