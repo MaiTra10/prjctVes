@@ -139,7 +139,10 @@ def get_specific_item_embed(chosen, item_name):
         steam_body = json.loads(steam_resp["body"])
 
         embed = discord.Embed(title = f"{item_name}", color = 0x0175A7)
-        embed.set_thumbnail(url = f"{steam_body['imgURL']}")
+        try:
+            embed.set_thumbnail(url = f"{steam_body['imgURL']}")
+        except KeyError:
+            print("Could not get Steam item image")
         embed.add_field(name = "Lowest Price", value = f"{steam_body['lowest_price']}", inline = False)
         embed.add_field(name = "Volume", value = f"**{steam_body['volume']}** sold in the last 24 hours", inline = True)
         embed.add_field(name = "Median Sale Price", value = f"{steam_body['median_price']}", inline = True)
@@ -177,6 +180,8 @@ def get_specific_item_embed(chosen, item_name):
             embed.add_field(name = "", value = "")
 
         return embed
+
+# Bot
 
 @bot.event
 async def on_ready():
@@ -232,11 +237,21 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     chosen = choice.value
 
+    if chosen == "steam":
+
+        chosen_text = "Steam"
+
+    else:
+
+        chosen_text = "stocks"
+        name = name.upper()
+
     valid = validate_name(chosen, name)
 
     if valid != 200:
 
-        await interaction.followup.send(f"'{name}' is not a valid entry for a {chosen} watchlist!", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"'{name}' is not a valid entry for a {chosen_text} watchlist!", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
 
     # 'name' is validated
@@ -247,17 +262,20 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     if add_status == 409:
 
-        await interaction.followup.send(f"'{name}' is already in your {chosen} watchlist!", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"'{name}' is already in your {chosen_text} watchlist!", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
     
     elif add_status == 403:
 
-        await interaction.followup.send(f"You have reached the maximum number of entries for your {chosen} watchlist!", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"You have reached the maximum number of entries for your {chosen_text} watchlist!", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
     
     else:
 
-        await interaction.followup.send(f"'{name}' was successfully added to your {chosen} watchlist!", ephemeral = True)
+        embed = discord.Embed(title = "", description = f"'{name}' was successfully added to your {chosen_text} watchlist!", color = 0x008000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
 
 @bot.tree.command(name = "wl_remove", description = "Remove an entry from your watchlist")
@@ -272,23 +290,34 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
 
     chosen = choice.value
 
+    if chosen == "steam":
+
+        chosen_text = "Steam"
+
+    else:
+
+        chosen_text = "stocks"
+
     remove_resp = api("DELETE", "remove", {"for": chosen, "user": interaction.user.id, "index": index})
 
     remove_status = remove_resp["statusCode"]
 
     if remove_status == 403:
 
-        await interaction.followup.send(f"Your {chosen} watchlist is empty!", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"Your {chosen_text} watchlist is empty!", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
 
     elif remove_status == 400:
 
-        await interaction.followup.send(f"{remove_resp['body'].split(': ')[1]}", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"{remove_resp['body'].split(': ')[1]}", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
     
     else:
 
-        await interaction.followup.send(f"'{json.loads(remove_resp['body'])['item']}' was successfully removed from your {chosen} watchlist!", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"'{json.loads(remove_resp['body'])['item']}' was successfully removed from your {chosen_text} watchlist!", color = 0x008000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
 
 @bot.tree.command(name = "wl", description = "Display your watchlist")
@@ -308,6 +337,14 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
     else:
 
         chosen = choice
+
+    if chosen == "steam":
+
+        chosen_text = "Steam"
+
+    else:
+
+        chosen_text = "stocks"
 
     if choice == "both" and index != None:
 
@@ -339,7 +376,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         else:
 
-            message = f"Your {chosen} watchlist is empty!"
+            message = f"Your {chosen_text} watchlist is empty!"
 
         embed = discord.Embed(title = "Error", description = message, color = 0xff0000)
 
@@ -392,7 +429,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
             stock_prefix = ""
 
         embed.add_field(name = "Steam", value = f"{steam_prefix}{steam_list_string}", inline = True)
-        embed.add_field(name = "Stock", value = f"{stock_prefix}{stock_list_string}", inline = True)
+        embed.add_field(name = "Stocks", value = f"{stock_prefix}{stock_list_string}", inline = True)
 
         await interaction.followup.send(embed = embed, ephemeral = True)
         return
@@ -424,14 +461,24 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 async def search(interaction: discord.Interaction, choice: app_commands.Choice[str], name: str):
 
     await interaction.response.defer(ephemeral = True)
-
+    
     chosen = choice.value
+
+    if chosen == "steam":
+
+        chosen_text = "Steam item"
+
+    else:
+
+        chosen_text = chosen
+        name = name.upper()
 
     valid = validate_name(chosen, name)
 
     if valid != 200:
 
-        await interaction.followup.send(f"'{name}' is not a valid stock/Steam item.", ephemeral = True)
+        embed = discord.Embed(title = "Error", description = f"'{name}' is not a valid {chosen_text}!", color = 0xff0000)
+        await interaction.followup.send(embed = embed, ephemeral = True)
         return
 
     # 'name' is validated
