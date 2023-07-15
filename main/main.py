@@ -159,17 +159,17 @@ def create_steam_plot(prices):
     plt.text(0, 0, start_and_end_date[0], ha='left', va='top', transform=ax.transAxes, color = "white")
     plt.text(0.8475, 0, start_and_end_date[1], ha='left', va='top', transform=ax.transAxes, color = "white")
     plt.rcParams["text.color"] = "white"
+
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(plot_tick_formatter))
-    ax.set_facecolor("#2B2D31")
     ax.yaxis.label.set_color("white")
-    graph.set_facecolor("#2B2D31")
-
+    ax.set_facecolor("#2B2D31")
     ax.tick_params(colors = "#2B2D31")
-
     ax.spines['left'].set_color("#2B2D31")
     ax.spines['bottom'].set_color("#2B2D31")
     ax.spines['right'].set_color("#2B2D31")
     ax.spines['top'].set_color("#2B2D31")
+
+    graph.set_facecolor("#2B2D31")
 
     ytick_labels = ax.get_yticklabels()
 
