@@ -2,3 +2,4 @@
 .vscode/launch.json
 test/test.py
 test/test_bot.py
+steam_graph.png

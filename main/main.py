@@ -4,6 +4,8 @@ import os
 import requests
 import json
 import simplejson as json
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional
@@ -130,6 +132,58 @@ def get_stock_embed(items):
 
     return embed
 
+def plot_tick_formatter(x, pos):
+    
+    return f"${x:.2f}"
+
+def create_steam_plot(prices):
+
+    price_list = []
+
+    start_and_end_date = []
+
+    for data in prices[::len(prices)-1]:
+
+        start_and_end_date.append(data[0][:-7])
+
+    for price in prices:
+
+        price_list.append(price[1])
+
+    graph, ax = plt.subplots()
+
+    plt.plot(price_list, color = "#688F3E")
+    plt.xticks([])
+    plt.grid(color = "#4b4f52")
+    plt.ylabel("(CAD)")
+    plt.text(0, 0, start_and_end_date[0], ha='left', va='top', transform=ax.transAxes, color = "white")
+    plt.text(0.8475, 0, start_and_end_date[1], ha='left', va='top', transform=ax.transAxes, color = "white")
+    plt.rcParams["text.color"] = "white"
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(plot_tick_formatter))
+    ax.set_facecolor("#2B2D31")
+    ax.yaxis.label.set_color("white")
+    graph.set_facecolor("#2B2D31")
+
+    ax.tick_params(colors = "#2B2D31")
+
+    ax.spines['left'].set_color("#2B2D31")
+    ax.spines['bottom'].set_color("#2B2D31")
+    ax.spines['right'].set_color("#2B2D31")
+    ax.spines['top'].set_color("#2B2D31")
+
+    ytick_labels = ax.get_yticklabels()
+
+    for label in ytick_labels:
+
+        label.set_color("white")
+
+
+    file_name = "steam_graph.png"
+
+    plt.savefig(file_name)
+
+    return
+
 def get_specific_item_embed(chosen, item_name):
     
     if chosen == "steam":
@@ -147,7 +201,18 @@ def get_specific_item_embed(chosen, item_name):
         embed.add_field(name = "Volume", value = f"**{steam_body['volume']}** sold in the last 24 hours", inline = True)
         embed.add_field(name = "Median Sale Price", value = f"{steam_body['median_price']}", inline = True)
 
-        return embed
+        if steam_body["historyAvailable"] == True:
+
+            create_steam_plot(steam_body["prices"])
+            file = discord.File("C:/Users/Maitra/Documents/ProgrammingProjects/prjctVes/steam_graph.png", "steam_graph.png")
+            embed.set_image(url = "attachment://steam_graph.png")
+
+        else:
+
+            file = "empty"
+            embed.set_footer(text = "*Graph is temporarily not available.*")
+
+        return embed, file
     
     else:
 
@@ -399,10 +464,17 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
         item = json.loads(get_resp["body"])
         item_name = item['item']
 
-        embed = get_specific_item_embed(chosen, item_name)
+        embed, file = get_specific_item_embed(chosen, item_name)
 
-        await interaction.followup.send(embed = embed, ephemeral = True)
-        return
+        if file == "empty":
+
+            await interaction.followup.send(embed = embed, ephemeral = True)
+            return
+        
+        else:
+
+            await interaction.followup.send(embed = embed, file = file, ephemeral = True)
+            return
 
     if chosen == "both":
 
@@ -483,9 +555,16 @@ async def search(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     # 'name' is validated
 
-    embed = get_specific_item_embed(chosen, name)
+    embed, file = get_specific_item_embed(chosen, name)
 
-    await interaction.followup.send(embed = embed, ephemeral = True)
-    return
+    if file == "empty":
+
+        await interaction.followup.send(embed = embed, ephemeral = True)
+        return
+    
+    else:
+
+        await interaction.followup.send(embed = embed, file = file, ephemeral = True)
+        return
 
 bot.run(TOKEN)
