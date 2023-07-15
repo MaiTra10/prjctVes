@@ -203,7 +203,7 @@ def get_specific_item_embed(chosen, item_name):
         if steam_body["historyAvailable"] == True:
 
             create_steam_plot(steam_body["prices"])
-            file = discord.File("C:/Users/Maitra/Documents/ProgrammingProjects/prjctVes/steam_graph.png", "steam_graph.png")
+            file = discord.File("steam_graph.png", "steam_graph.png")
             embed.set_image(url = "attachment://steam_graph.png")
 
         else:
