@@ -2,7 +2,6 @@
 import discord
 import os
 import requests
-import json
 import simplejson as json
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
