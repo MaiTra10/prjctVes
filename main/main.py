@@ -192,6 +192,27 @@ async def on_ready():
 
     print(f"{bot.user.name} is cooking!")
 
+    await bot.change_presence(status = discord.Status.online, activity= discord.Game("/help"))
+
+@bot.tree.command(name = "help", description = "Get an overview of all the commands and how to use them.")
+async def help(interaction: discord.Interaction):
+
+    await interaction.response.defer(ephemeral = True)
+
+    embed = discord.Embed(title = "Ves' List of Commands", color = 0xE8E1E1)
+
+    embed.add_field(name = "", value = f"*~ indicates an optional field*", inline = False)
+    embed.add_field(name = f"<:green_plus:1129556140687097907> `/wl_add    <choice: [steam/stock]>  <name>`", value = "Add an entry to your watchlist (you are allowed a maximum of 10 entries per watchlist)\n", inline = False)
+    embed.add_field(name = f"<:red_dash:1129556722248327208> `/wl_remove <choice: [steam/stock]>  <index: [1-10]>`", value = "Remove an entry from one of your watchlists\n", inline = False)
+    embed.add_field(name = f":notepad_spiral: `/wl       ~<choice: [steam/stock]> ~<index: [1-10]>`", value = "Show your watchlist(s) or a watchlist entry\n> If you want to see an overview of both watchlists, provide no arguments\n> If you want to see a specific watchlist with prices, specify `choice`\n> If you want to see a detailed look at an entry in your watchlist, provide `choice` and `index`\n*Specific item queries can take up to 5 seconds*\n*Specific watchlist queries can take anywhere from 3 to 30 seconds (more time the more items there are in the list) so be patient*", inline = False)
+    embed.add_field(name = f":mag_right: `/search    <choice: [steam/stock]>  <name>`", value = "Search for a specific Steam item or stock and get a detailed look", inline = False)
+    embed.add_field(name = f"Formatting", value = "__Steam__\nCurrently only supports CS:GO items.\nTo ensure the item name is validated correctly, the name must be entered exactly as shown on the Steam market page, and if it is an item with wear it must include the wear in brackets at the end of the item's name `ex. AK-47 | Slate (Field-Tested)'`.", inline = False)
+    embed.add_field(name = "", value = "__Stock__\nThe retrieval of stock prices and data utilizes Google Finance so to ensure validation, use the format `[ticker]:[exchange]`. The current API supports all exchanges and futures currently available on Google Finance, discluding currencies and cryptocurrency.", inline = False)
+    embed.add_field(name = "Links", value = "[My Github](https://github.com/MaiTra10) | [prjctVes Github Repo](https://github.com/MaiTra10/prjctVes)", inline = False)
+
+    await interaction.followup.send(embed = embed, ephemeral = True)
+    return
+
 # Slash Command: /say [say_this]
 @bot.tree.command(name = "say", description = "Tell Ves to say something.")
 @app_commands.describe(say_this = "What do you want me to say?")
@@ -394,7 +415,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
         await interaction.followup.send(embed = embed, ephemeral = True)
         return
     
-@bot.tree.command(name = "search", description = "Search for a specific CS:GO item or stock.")
+@bot.tree.command(name = "search", description = "Search for a specific Steam item or stock.")
 @app_commands.describe(choice = "Choose either 'steam' or 'stock'", name = "Steam: Exact name of item and wear (if any) at end in brackets | Stock: '[ticker]:[exchange]'")
 @app_commands.choices(choice = [
     app_commands.Choice(name = "steam ", value = "steam"),
@@ -410,7 +431,7 @@ async def search(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     if valid != 200:
 
-        await interaction.followup.send(f"'{name}' is not a valid stock/CS:GO item.", ephemeral = True)
+        await interaction.followup.send(f"'{name}' is not a valid stock/Steam item.", ephemeral = True)
         return
 
     # 'name' is validated
