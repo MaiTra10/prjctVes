@@ -243,7 +243,9 @@ def get_specific_item_embed(chosen, item_name):
 
             embed.add_field(name = "", value = "")
 
-        return embed
+        file = "empty"
+
+        return embed, file
 
 # Bot
 
