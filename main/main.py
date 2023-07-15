@@ -11,7 +11,7 @@ from typing import Optional
 
 TOKEN = os.getenv("DISCORD_TOKEN_VES")
 
-bot = commands.Bot(command_prefix = ".", intents = discord.Intents.default())
+bot = commands.Bot(command_prefix = ".", intents = discord.Intents.all())
 
 def api(http_method, method, params):
 
@@ -264,6 +264,15 @@ async def on_ready():
     print(f"{bot.user.name} is cooking!")
 
     await bot.change_presence(status = discord.Status.online, activity= discord.Game("/help"))
+
+@bot.event
+async def on_member_join(member):
+
+    if member.guild.id == 1129876808150565024:
+
+        role = discord.utils.get(member.guild.roles, name = "Beta Tester")
+
+        await member.add_roles(role)
 
 @bot.tree.command(name = "help", description = "Get an overview of all the commands and how to use them.")
 async def help(interaction: discord.Interaction):
