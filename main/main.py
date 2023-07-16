@@ -391,7 +391,7 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
     
     else:
 
-        embed = discord.Embed(title = "Error", description = f"'{json.loads(remove_resp['body'])['item']}' was successfully removed from your {chosen_text} watchlist!", color = 0x008000)
+        embed = discord.Embed(title = "", description = f"'{json.loads(remove_resp['body'])['item']}' was successfully removed from your {chosen_text} watchlist!", color = 0x008000)
         await interaction.followup.send(embed = embed, ephemeral = False)
         return
 
