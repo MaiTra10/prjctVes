@@ -1,7 +1,7 @@
 # Ves
 import discord
 import os
-import requests
+import aiohttp
 import simplejson as json
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -13,7 +13,37 @@ TOKEN = os.getenv("DISCORD_TOKEN_VES")
 
 bot = commands.Bot(command_prefix = ".", intents = discord.Intents.all())
 
-def api(http_method, method, params):
+async def aio_post(url, params, header):
+    
+    async with aiohttp.ClientSession(headers = header) as session:
+
+        async with session.post(url = url, params = params) as response:
+
+            resp = await response.text()
+            
+            return {"statusCode": response.status,"body": resp}
+        
+async def aio_get(url, params, header):
+    
+    async with aiohttp.ClientSession(headers = header) as session:
+
+        async with session.get(url = url, params = params) as response:
+
+            resp = await response.text()
+            
+            return {"statusCode": response.status,"body": resp}
+        
+async def aio_delete(url, params, header):
+    
+    async with aiohttp.ClientSession(headers = header) as session:
+
+        async with session.delete(url = url, params = params) as response:
+
+            resp = await response.text()
+            
+            return {"statusCode": response.status,"body": resp}
+
+async def api(http_method, method, params):
 
     API_KEY = os.getenv("VES_API_KEY")
 
@@ -23,24 +53,19 @@ def api(http_method, method, params):
 
     if http_method == "POST":
 
-        resp = requests.post(url, params = params, headers = header)
+        resp = await aio_post(url, params, header)
 
     elif http_method == "GET":
 
-        resp = requests.get(url, params = params, headers = header)
+        resp = await aio_get(url, params, header)
 
     else:
 
-        resp = requests.delete(url, params = params, headers = header)
+        resp = await aio_delete(url, params, header)
 
-    return {
+    return resp
 
-        "statusCode": resp.status_code,
-        "body": resp.text
-
-    }
-
-def validate_name(chosen, name):
+async def validate_name(chosen, name):
 
     if chosen == "steam":
 
@@ -56,7 +81,7 @@ def validate_name(chosen, name):
 
             return 400
 
-    validate_resp  = api("GET", chosen, params)
+    validate_resp  = await api("GET", chosen, params)
 
     return validate_resp["statusCode"]
 
@@ -87,7 +112,7 @@ def get_both_item_list(items):
 
     return steam_list_string, stock_list_string
 
-def get_steam_embed(items):
+async def get_steam_embed(items):
 
     embed = discord.Embed(title = "Steam Watchlist", color = 0x0175A7)
 
@@ -97,7 +122,7 @@ def get_steam_embed(items):
 
         item_name = item['item']
 
-        steam_resp = api("GET", "steam", {"requestType": "basic", "itemName": item_name})
+        steam_resp = await api("GET", "steam", {"requestType": "basic", "itemName": item_name})
 
         steam_body = json.loads(steam_resp["body"])
 
@@ -105,7 +130,7 @@ def get_steam_embed(items):
 
     return embed
 
-def get_stock_embed(items):
+async def get_stock_embed(items):
 
     embed = discord.Embed(title = "Stock Watchlist", color = 0x50C374)
 
@@ -115,7 +140,7 @@ def get_stock_embed(items):
 
         item_name = item['item']
 
-        stock_resp = api("GET", "stock", {"requestType": "basic", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
+        stock_resp = await api("GET", "stock", {"requestType": "basic", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
 
         stock_body = json.loads(stock_resp["body"])
 
@@ -187,11 +212,11 @@ def create_steam_plot(prices):
 
     return
 
-def get_specific_item_embed(chosen, item_name):
+async def get_specific_item_embed(chosen, item_name):
     
     if chosen == "steam":
 
-        steam_resp = api("GET", "steam", {"requestType": "advanced", "itemName": item_name})
+        steam_resp = await api("GET", "steam", {"requestType": "advanced", "itemName": item_name})
 
         steam_body = json.loads(steam_resp["body"])
 
@@ -219,7 +244,7 @@ def get_specific_item_embed(chosen, item_name):
     
     else:
 
-        stock_resp = api("GET", "stock", {"requestType": "advanced", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
+        stock_resp = await api("GET", "stock", {"requestType": "advanced", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
 
         stock_body = json.loads(stock_resp["body"])
 
@@ -325,7 +350,7 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
         chosen_text = "stocks"
         name = name.upper()
 
-    valid = validate_name(chosen, name)
+    valid = await validate_name(chosen, name)
 
     if valid != 200:
 
@@ -335,7 +360,7 @@ async def wl_add(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     # 'name' is validated
 
-    add_resp = api("POST", "add", {"for": chosen, "user": interaction.user.id, "itemToAdd": name})
+    add_resp = await api("POST", "add", {"for": chosen, "user": interaction.user.id, "itemToAdd": name})
 
     add_status = add_resp["statusCode"]
 
@@ -377,7 +402,7 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
 
         chosen_text = "stocks"
 
-    remove_resp = api("DELETE", "remove", {"for": chosen, "user": interaction.user.id, "index": index})
+    remove_resp = await api("DELETE", "remove", {"for": chosen, "user": interaction.user.id, "index": index})
 
     remove_status = remove_resp["statusCode"]
 
@@ -405,7 +430,7 @@ async def wl_remove(interaction: discord.Interaction, choice: app_commands.Choic
     app_commands.Choice(name = "steam ", value = "steam"),
     app_commands.Choice(name = "stock ", value = "stock")
 ])
-async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Choice[str]] = "both", index: Optional[app_commands.Range[int, 1, 10]] = None):
+async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Choice[str]] = "both", index: Optional[app_commands.Range[int, 1, 10]] = "None"):
 
     await interaction.response.defer(ephemeral = False)
 
@@ -425,7 +450,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         chosen_text = "stocks"
 
-    if choice == "both" and index != None:
+    if choice == "both" and index != "None":
 
         embed = discord.Embed(title = "Error", description = f"You cannot specify an index without specifying a watchlist type (steam/stock).", color = 0xff0000)
 
@@ -433,7 +458,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         return
 
-    if index == None:
+    if index == "None":
 
         retrieve = "all"
 
@@ -441,7 +466,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         retrieve = "specific"
 
-    get_resp = api("GET", "get", {"for": chosen, "user": interaction.user.id, "retrieve": retrieve, "index": index})
+    get_resp = await api("GET", "get", {"for": chosen, "user": interaction.user.id, "retrieve": retrieve, "index": index})
 
     get_status = get_resp["statusCode"]
 
@@ -478,7 +503,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
         item = json.loads(get_resp["body"])
         item_name = item['item']
 
-        embed, file = get_specific_item_embed(chosen, item_name)
+        embed, file = await get_specific_item_embed(chosen, item_name)
 
         if file == "empty":
 
@@ -524,7 +549,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         items = json.loads(get_resp["body"])
 
-        embed = get_steam_embed(items)
+        embed = await get_steam_embed(items)
 
         await interaction.followup.send(embed = embed, ephemeral = False)
         return
@@ -533,7 +558,7 @@ async def wl(interaction: discord.Interaction, choice: Optional[app_commands.Cho
 
         items = json.loads(get_resp["body"])
 
-        embed = get_stock_embed(items)
+        embed = await get_stock_embed(items)
 
         await interaction.followup.send(embed = embed, ephemeral = False)
         return
@@ -559,7 +584,7 @@ async def search(interaction: discord.Interaction, choice: app_commands.Choice[s
         chosen_text = chosen
         name = name.upper()
 
-    valid = validate_name(chosen, name)
+    valid = await validate_name(chosen, name)
 
     if valid != 200:
 
@@ -569,7 +594,7 @@ async def search(interaction: discord.Interaction, choice: app_commands.Choice[s
 
     # 'name' is validated
 
-    embed, file = get_specific_item_embed(chosen, name)
+    embed, file = await get_specific_item_embed(chosen, name)
 
     if file == "empty":
 
