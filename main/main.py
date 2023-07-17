@@ -15,19 +15,23 @@ bot = commands.Bot(command_prefix = ".", intents = discord.Intents.all())
 
 def api(http_method, method, params):
 
+    API_KEY = os.getenv("VES_API_KEY")
+
     url = "https://4qq4mnhpug.execute-api.us-west-2.amazonaws.com/prod/" + method
+
+    header = {"x-api-key": API_KEY}
 
     if http_method == "POST":
 
-        resp = requests.post(url, params = params)
+        resp = requests.post(url, params = params, headers = header)
 
     elif http_method == "GET":
 
-        resp = requests.get(url, params = params)
+        resp = requests.get(url, params = params, headers = header)
 
     else:
 
-        resp = requests.delete(url, params = params)
+        resp = requests.delete(url, params = params, headers = header)
 
     return {
 
