@@ -5,6 +5,9 @@ import aiohttp
 import simplejson as json
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import yfinance as yf
+import mplfinance as mpl
+import pandas as pd
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional
@@ -182,7 +185,7 @@ def create_steam_plot(prices):
 
     plt.plot(price_list, color = "#688F3E")
     plt.xticks([])
-    plt.grid(color = "#4b4f52")
+    plt.grid(color = "#4B4F52")
     plt.ylabel("(CAD)")
     plt.text(0, 0, start_and_end_date[0], ha='left', va='top', transform=ax.transAxes, color = "white")
     plt.text(0.8475, 0, start_and_end_date[1], ha='left', va='top', transform=ax.transAxes, color = "white")
@@ -205,12 +208,103 @@ def create_steam_plot(prices):
 
         label.set_color("white")
 
-
-    file_name = "steam_graph.png"
-
-    plt.savefig(file_name)
+    plt.savefig("steam_graph.png")
 
     return
+
+# Reference: https://python.plainenglish.io/plot-stock-chart-using-mplfinance-in-python-9286fc69689
+def MACD(data, slow, fast, signal):
+
+    macd = pd.DataFrame()
+    macd["ema_slow"] = data["Close"].ewm(span = slow).mean()
+    macd["ema_fast"] = data["Close"].ewm(span = fast).mean()
+    macd["macd"] = macd["ema_slow"] - macd["ema_fast"]
+    macd["signal"] = macd["macd"].ewm(span = signal).mean()
+    macd["difference"] = macd["macd"] - macd["signal"]
+    macd['bar_positive'] = macd["difference"].map(lambda x: x if x > 0 else 0)
+    macd['bar_negative'] = macd["difference"].map(lambda x: x if x < 0 else 0)
+
+    return macd
+
+def stock_plot_dollar_formatter(x, pos):
+
+    return f"${x:.2f}"
+
+def stock_plot_volume_formatter(x, pos):
+
+    if int(x) >= 1e6:
+
+        y = int(x / 1e6)
+
+        return f"{y}M"
+    
+    elif int(x) >= 1e4:
+
+        y = int(x / 1e3)
+
+        return f"{y}K"
+    
+    else: 
+        
+        return str(int(x))
+
+def create_stock_plot(stock_ticker, exchange):
+
+    supported_exchanges = ["NASDAQ", "NYSE", "TSE"]
+
+    if exchange in supported_exchanges:
+
+        if exchange == "TSE":
+
+            stock_ticker += ".TO"
+
+        data = yf.download(tickers = stock_ticker, period = "90d")
+        macd = MACD(data, 12, 26, 9)
+
+        macd_plot = [
+
+            mpl.make_addplot(macd["macd"], color = "#EF5858", panel = 2, secondary_y = False),
+            mpl.make_addplot(macd["signal"], color = "#5661F6", panel = 2, secondary_y = False),
+            mpl.make_addplot(macd["bar_positive"], color = "#7E91A8", type = "bar", panel = 2),
+            mpl.make_addplot(macd["bar_negative"], color = "#704F58", type = "bar", panel = 2)
+
+        ]
+
+        mc = mpl.make_marketcolors(up = "#5661F6", down = "#EF5858", wick = "gray", volume = "#5661F6", edge = "")
+
+        style = mpl.make_mpf_style(facecolor = "#2B2D31", figcolor = "#2B2D31", edgecolor = "#A2A5AB", marketcolors = mc, gridstyle = "-", gridcolor = "#4B4F52")
+
+
+        fig, axlist = mpl.plot(data, type = "candle", style = style, volume = True, ylabel = "", addplot = macd_plot, scale_width_adjustment=dict(lines=0.5), returnfig = True)
+
+        axlist[0].tick_params(colors = "#2B2D31")
+        axlist[0].yaxis.set_major_formatter(ticker.FuncFormatter(stock_plot_dollar_formatter))
+
+        axlist[2].tick_params(colors = "#2B2D31")
+        axlist[2].spines['top'].set_linewidth(1)
+        axlist[2].spines['top'].set_color("#A2A5AB")
+
+        axlist[2].yaxis.set_major_formatter(ticker.FuncFormatter(stock_plot_volume_formatter))
+
+        axlist[4].tick_params(colors = "#2B2D31")
+        axlist[4].spines['top'].set_linewidth(1)
+        axlist[4].spines['top'].set_color("#A2A5AB")
+
+        axlist[2].set_ylabel("")
+
+        tick_labels = axlist[0].get_yticklabels() + axlist[2].get_yticklabels() + axlist[4].get_yticklabels() + axlist[4].get_xticklabels()
+
+        for label in tick_labels:
+
+            label.set_color("white")
+
+        fig.savefig("stock_graph.png")
+
+        return
+    
+    else:
+
+        raise Exception(f"Exception: The exchange '{exchange}' in not supported")
 
 async def get_specific_item_embed(chosen, item_name):
     
@@ -238,13 +332,16 @@ async def get_specific_item_embed(chosen, item_name):
         else:
 
             file = "empty"
-            embed.set_footer(text = "*Graph is temporarily not available.*")
+            embed.set_footer(text = "*Graph is temporarily not available.")
 
         return embed, file
     
     else:
 
-        stock_resp = await api("GET", "stock", {"requestType": "advanced", "ticker": item_name.split(":")[0], "exchange": item_name.split(":")[1]})
+        ticker = item_name.split(":")[0]
+        exchange = item_name.split(":")[1]
+
+        stock_resp = await api("GET", "stock", {"requestType": "advanced", "ticker": ticker, "exchange": exchange})
 
         stock_body = json.loads(stock_resp["body"])
 
@@ -272,7 +369,16 @@ async def get_specific_item_embed(chosen, item_name):
 
             embed.add_field(name = "", value = "")
 
-        file = "empty"
+        try:
+
+            create_stock_plot(ticker, exchange)
+            file = discord.File("stock_graph.png", "stock_graph.png")
+            embed.set_image(url = "attachment://stock_graph.png")
+
+        except:
+
+            file = "empty"
+            embed.set_footer(text = "*Graphs are currently only available for the following markets: NASDAQ, NYSE and TSE")
 
         return embed, file
 

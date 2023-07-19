@@ -8,6 +8,9 @@ name = "pypi"
 simplejson = "*"
 matplotlib = "*"
 typing = "*"
+mplfinance = "*"
+pandas = "*"
+yfinance = "*"
 
 [dev-packages]
 
