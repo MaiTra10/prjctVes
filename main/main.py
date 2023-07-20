@@ -11,6 +11,7 @@ import pandas as pd
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional
+from urllib.parse import quote
 
 TOKEN = os.getenv("DISCORD_TOKEN_VES")
 
@@ -129,7 +130,9 @@ async def get_steam_embed(items):
 
         steam_body = json.loads(steam_resp["body"])
 
-        embed.add_field(name = f"{count}. {item_name}", value = f"{steam_body['lowest_price']}", inline = False)
+        item_name_for_url = quote(item_name)
+
+        embed.add_field(name = f"{count}. {item_name}", value = f"[{steam_body['lowest_price']}](https://steamcommunity.com/market/listings/730/{item_name_for_url})", inline = False)
 
     return embed
 
@@ -159,7 +162,7 @@ async def get_stock_embed(items):
 
             emoji = ":white_small_square:"
 
-        embed.add_field(name = f"{count}. {item_name} {emoji} {abs(stock_body['% Change'])}%", value = f"{stock_body['Current Price']}", inline = False)
+        embed.add_field(name = f"{count}. {item_name} {emoji} {abs(stock_body['% Change'])}%", value = f"[{stock_body['Current Price']}](https://www.google.com/finance/quote/{item_name}?hl=en)", inline = False)
 
     return embed
 
@@ -314,7 +317,9 @@ async def get_specific_item_embed(chosen, item_name):
 
         steam_body = json.loads(steam_resp["body"])
 
-        embed = discord.Embed(title = f"{item_name}", color = 0x0175A7)
+        item_name_for_url = quote(item_name)
+
+        embed = discord.Embed(title = f"{item_name}", color = 0x0175A7, url = f"https://steamcommunity.com/market/listings/730/{item_name_for_url}")
         try:
             embed.set_thumbnail(url = f"{steam_body['imgURL']}")
         except KeyError:
@@ -345,7 +350,7 @@ async def get_specific_item_embed(chosen, item_name):
 
         stock_body = json.loads(stock_resp["body"])
 
-        stock_parameters = list(stock_body.keys())[:-1]
+        stock_parameters = list(stock_body.keys())[:-2]
 
         if stock_body["% Change"] < 0.00:
 
@@ -359,7 +364,9 @@ async def get_specific_item_embed(chosen, item_name):
 
             emoji = ":white_small_square:"
 
-        embed = discord.Embed(title = f"{item_name} {emoji} {abs(stock_body['% Change'])}%", color = 0x50C374)
+        embed = discord.Embed(title = f"{item_name} {emoji} {abs(stock_body['% Change'])}%", color = 0x50C374, url = f"https://www.google.com/finance/quote/{item_name}?hl=en")
+
+        embed.add_field(name = "", value = stock_body["Name"], inline = False)
 
         for parameter in stock_parameters:
 
