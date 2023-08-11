@@ -1,6 +1,6 @@
 # Ves
 import discord
-import os
+import configparser
 import aiohttp
 import simplejson as json
 import matplotlib.pyplot as plt
@@ -13,9 +13,13 @@ from discord.ext import commands
 from typing import Optional
 from urllib.parse import quote
 
-TOKEN = os.getenv("DISCORD_TOKEN_VES")
+# Read .ini file
 
-bot = commands.Bot(command_prefix = ".", intents = discord.Intents.all())
+cfg = configparser.ConfigParser()
+
+cfg.read("main/keys.ini")
+
+# Functions
 
 async def aio_post(url, params, header):
     
@@ -49,7 +53,7 @@ async def aio_delete(url, params, header):
 
 async def api(http_method, method, params):
 
-    API_KEY = os.getenv("VES_API_KEY")
+    API_KEY = cfg.get("API", "VesAPIKey")
 
     url = "https://4qq4mnhpug.execute-api.us-west-2.amazonaws.com/prod/" + method
 
@@ -388,6 +392,12 @@ async def get_specific_item_embed(chosen, item_name):
             embed.set_footer(text = "*Graphs are currently only available for the following markets: NASDAQ, NYSE and TSE")
 
         return embed, file
+
+# Bot initialization
+
+TOKEN = cfg.get("Discord", "BotToken")
+
+bot = commands.Bot(command_prefix = ".", intents = discord.Intents.all())
 
 # Bot
 
