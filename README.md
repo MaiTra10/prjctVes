@@ -24,20 +24,20 @@ The inspiration for this project stems from my daily routine of manually checkin
   <summary><b>/wl_add</b></summary>
   <p>
     <details>
-      <summary><b>Adding Stock/CS:GO Item</b></summary>
+      <summary><b>&emsp;Adding Stock/CS:GO Item</b></summary>
       
     </details>
     <details>
-      <summary><b>Errors</b></summary>
+      <summary><b>&emsp;Errors</b></summary>
         <p>
           <details>
-            <summary><b>Duplicate Entry</b></summary>
+            <summary><b>&emsp;&emsp;Duplicate Entry</b></summary>
           </details>
           <details>
-            <summary><b>Invalid Stock/Item</b></summary>
+            <summary><b>&emsp;&emsp;Invalid Stock/CS:GO Item</b></summary>
           </details>
           <details>
-            <summary><b>Watchlist Limit Reached</b></summary>
+            <summary><b>&emsp;&emsp;Watchlist Limit Reached</b></summary>
           </details>
         </p>
     </details>
@@ -48,17 +48,17 @@ The inspiration for this project stems from my daily routine of manually checkin
   <summary><b>/wl_remove</b></summary>
   <p>
     <details>
-      <summary><b>Removing Stock/CS:GO Item</b></summary>
+      <summary><b>&emsp;Removing Stock/CS:GO Item</b></summary>
       
     </details>
     <details>
-      <summary><b>Errors</b></summary>
+      <summary><b>&emsp;Errors</b></summary>
         <p>
           <details>
-            <summary><b>Watchlist is Empty</b></summary>
+            <summary><b>&emsp;&emsp;Watchlist is Empty</b></summary>
           </details>
           <details>
-            <summary><b>Index is out of Range</b></summary>
+            <summary><b>&emsp;&emsp;Index is out of Range</b></summary>
           </details>
         </p>
     </details>
@@ -67,10 +67,46 @@ The inspiration for this project stems from my daily routine of manually checkin
 
 - <details>
   <summary><b>/wl</b></summary>
-  <img src=" "alt="A GIF of the "  height="450">
+  <p>
+    <details>
+      <summary><b>&emsp;Show Specific Stock/CS:GO Item List</b></summary>
+      
+    </details>
+    <details>
+      <summary><b>&emsp;Show Specific Stock/CS:GO Item Data</b></summary>
+      
+    </details>
+    <details>
+      <summary><b>&emsp;Errors</b></summary>
+        <p>
+          <details>
+            <summary><b>&emsp;&emsp;Watchlist is Empty</b></summary>
+          </details>
+          <details>
+            <summary><b>&emsp;&emsp;Index is out of Range</b></summary>
+          </details>
+          <details>
+            <summary><b>&emsp;&emsp;User Entry Error</b></summary>
+          </details>
+        </p>
+    </details>
+  </p>
 </details>
 
 - <details>
   <summary><b>/search</b></summary>
-  <img src=" "alt="A GIF of the "  height="450">
+  <p>
+    <details>
+      <summary><b>&emsp;Search Stock/CS:GO Item</b></summary>
+      
+    </details>
+    <details>
+      <summary><b>&emsp;Error</b></summary>
+        <p>
+          <details>
+            <summary><b>&emsp;&emsp;Invalid Stock/CS:GO Item</b></summary>
+          </details>
+        </p>
+    </details>
+  </p>
 </details>
