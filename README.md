@@ -7,7 +7,7 @@ The inspiration for this project stems from my daily routine of manually checkin
 
 ### :thinking: How to Use
 
-*To do either options below you will need a Discord account.<br>if you do not have one, you can create on [here](https://discord.com/register) or take a look<br>at the demos provided.*
+*To do either options below you will need a Discord account.<br>if you do not have one, you can create one [here](https://discord.com/register) or take a look<br>at the demos provided.*
 
 **If you would like to invite the bot to your own server** | [Invite](https://discord.com/api/oauth2/authorize?client_id=1121275829448605726&permissions=277294345216&scope=bot)
 
