@@ -3,7 +3,7 @@ Welcome to the GitHub repository for prjctVes, a Discord bot designed to streaml
 
 More notably, prjctVes incorporates a custom-built REST API, which you can explore in more detail [here](https://github.com/MaiTra10/prjctVes-API).
 
-The inspiration for this project stems from my daily routine of manually checking both stock prices and CS:GO item values. I recognized that this was an area for automation and figured why not simplify this process for myself and others by delivering comprehensive data with a single Discord command.
+The inspiration for this project stemmed from my daily routine of manually checking both stock prices and CS:GO item values. I recognized that this was an area for automation and figured why not simplify this process for myself and others by delivering comprehensive data with a single Discord command.
 
 ### :thinking: How to Use
 
