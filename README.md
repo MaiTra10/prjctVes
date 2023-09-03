@@ -16,12 +16,12 @@ The inspiration for this project stems from my daily routine of manually checkin
 ### :hammer_and_wrench: Functionality and Demos
 
 - <details>
-  <summary><b>/help</b></summary>
+  <summary><b>/help</b> | A command to list all the commands of the bot and how to use them</summary>
   <img src="images/gifs/help.gif" alt=""  height="450">
 </details>
 
 - <details>
-  <summary><b>/wl_add</b></summary>
+  <summary><b>/wl_add</b> | Used to add an entry to your watchlist</summary>
   <p>
     <details>
       <summary><b>&emsp;Adding Stock and Duplicate Entry Error</b></summary>
@@ -48,7 +48,7 @@ The inspiration for this project stems from my daily routine of manually checkin
 </details>
 
 - <details>
-  <summary><b>/wl_remove</b></summary>
+  <summary><b>/wl_remove</b> | Used to remove an entry from your watchlist</summary>
   <p>
     <details>
       <summary><b>&emsp;Removing Stock/CS:GO Item</b></summary>
@@ -71,7 +71,7 @@ The inspiration for this project stems from my daily routine of manually checkin
 </details>
 
 - <details>
-  <summary><b>/wl</b></summary>
+  <summary><b>/wl</b> | Used to display your watchlists or a specific entry from your watchlist</summary>
   <p>
     <details>
       <summary><b>&emsp;Show Specific Stock/CS:GO Item List</b></summary>
@@ -102,7 +102,7 @@ The inspiration for this project stems from my daily routine of manually checkin
 </details>
 
 - <details>
-  <summary><b>/search</b></summary>
+  <summary><b>/search</b> | Used to search a stock or CS:GO item</summary>
   <p>
     <details>
       <summary><b>&emsp;Search Stock/CS:GO Item</b></summary>
