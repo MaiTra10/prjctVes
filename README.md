@@ -17,27 +17,30 @@ The inspiration for this project stems from my daily routine of manually checkin
 
 - <details>
   <summary><b>/help</b></summary>
-  <img src=" "alt="A GIF of the "  height="450">
+  <img src="images/gifs/help.gif" alt=""  height="450">
 </details>
 
 - <details>
   <summary><b>/wl_add</b></summary>
   <p>
     <details>
-      <summary><b>&emsp;Adding Stock/CS:GO Item</b></summary>
-      
+      <summary><b>&emsp;Adding Stock and Duplicate Entry Error</b></summary>
+      <img src="images/gifs/wl_add_and_error_stock.gif" alt=""  height="450">
+    </details>
+    <details>
+      <summary><b>&emsp;Adding CS:GO Item and Duplicate Entry Error</b></summary>
+      <img src="images/gifs/wl_add_and_error_steam.gif" alt=""  height="450">
     </details>
     <details>
       <summary><b>&emsp;Errors</b></summary>
         <p>
           <details>
-            <summary><b>&emsp;&emsp;Duplicate Entry</b></summary>
-          </details>
-          <details>
             <summary><b>&emsp;&emsp;Invalid Stock/CS:GO Item</b></summary>
+            <img src="images/gifs/wl_add_invalid.gif" alt=""  height="450">
           </details>
           <details>
             <summary><b>&emsp;&emsp;Watchlist Limit Reached</b></summary>
+            <img src="images/gifs/wl_add_limit.gif" alt=""  height="450">
           </details>
         </p>
     </details>
@@ -49,16 +52,18 @@ The inspiration for this project stems from my daily routine of manually checkin
   <p>
     <details>
       <summary><b>&emsp;Removing Stock/CS:GO Item</b></summary>
-      
+      <img src="images/gifs/wl_remove.gif" alt=""  height="450">
     </details>
     <details>
       <summary><b>&emsp;Errors</b></summary>
         <p>
           <details>
             <summary><b>&emsp;&emsp;Watchlist is Empty</b></summary>
+            <img src="images/gifs/wl_remove_empty.gif" alt=""  height="450">
           </details>
           <details>
             <summary><b>&emsp;&emsp;Index is out of Range</b></summary>
+            <img src="images/gifs/wl_remove_index.gif" alt=""  height="450">
           </details>
         </p>
     </details>
@@ -70,23 +75,26 @@ The inspiration for this project stems from my daily routine of manually checkin
   <p>
     <details>
       <summary><b>&emsp;Show Specific Stock/CS:GO Item List</b></summary>
-      
+      <img src="images/gifs/wl_both_list.gif" alt=""  height="450">
     </details>
     <details>
       <summary><b>&emsp;Show Specific Stock/CS:GO Item Data</b></summary>
-      
+      <img src="images/gifs/wl_both.gif" alt=""  height="450">
     </details>
     <details>
       <summary><b>&emsp;Errors</b></summary>
         <p>
           <details>
             <summary><b>&emsp;&emsp;Watchlist is Empty</b></summary>
+            <img src="images/gifs/wl_empty.gif" alt=""  height="450">
           </details>
           <details>
             <summary><b>&emsp;&emsp;Index is out of Range</b></summary>
+            <img src="images/gifs/wl_index_error.gif" alt=""  height="450">
           </details>
           <details>
             <summary><b>&emsp;&emsp;User Entry Error</b></summary>
+            <img src="images/gifs/wl_edge_case.gif" alt=""  height="450">
           </details>
         </p>
     </details>
@@ -98,13 +106,14 @@ The inspiration for this project stems from my daily routine of manually checkin
   <p>
     <details>
       <summary><b>&emsp;Search Stock/CS:GO Item</b></summary>
-      
+      <img src="images/gifs/search_both.gif" alt=""  height="450">
     </details>
     <details>
       <summary><b>&emsp;Error</b></summary>
         <p>
           <details>
             <summary><b>&emsp;&emsp;Invalid Stock/CS:GO Item</b></summary>
+            <img src="images/gifs/search_invalid.gif" alt=""  height="450">
           </details>
         </p>
     </details>
