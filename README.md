@@ -1,4 +1,9 @@
 # <img src="images/Logo-circle.png" alt="prjctVes Logo"  height="30"> prjctVes
+<details>
+  <summary>Tech Diagram</summary>
+  <img src="images/prjctVes_diagram.png" alt="" height="450">
+</details>
+                              
 Welcome to the GitHub repository for prjctVes, a Discord bot designed to streamline your stock and CS:GO item tracking experience. With prjctVes, you can effortlessly monitor up to 10 stocks and CS:GO items in your watchlist, gaining valuable insights into their current prices and trends. Additionally, the bot offers a convenient search feature in case you just want to take a quick look. The bot is written in Python using [discord.py](https://pypi.org/project/discord.py/).
 
 More notably, prjctVes incorporates a custom-built REST API, which you can explore in more detail [here](https://github.com/MaiTra10/prjctVes-API).
