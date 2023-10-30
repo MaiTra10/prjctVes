@@ -16,8 +16,6 @@ The inspiration for this project stemmed from my daily routine of manually check
 
 **If you would like to invite the bot to your own server** | [Invite](https://discord.com/api/oauth2/authorize?client_id=1121275829448605726&permissions=277294345216&scope=bot)
 
-**If you would like to join the community server for prjctVes where you can use the bot** | [Join](https://discord.gg/FrPftXD46D)
-
 ### :hammer_and_wrench: Functionality and Demos
 
 - <details>
