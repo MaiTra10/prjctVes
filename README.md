@@ -1,4 +1,4 @@
-# <img src="images/Logo-circle.png" alt="prjctVes Logo"  height="30"> prjctVes
+# <img src="images/Logo-circle.png" alt="prjctVes Logo"  height="30"> prjctVes (Temporarily Offline)
 <details>
   <summary>Tech Diagram</summary>
   <img src="images/prjctVes_diagram.png" alt="" height=100%>
